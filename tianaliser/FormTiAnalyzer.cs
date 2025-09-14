@@ -23,6 +23,16 @@ namespace tianaliser
         //TODO: Se possui wifi / bluetooth / cabo 
         //TODO: Alertas 90 PORCENTO USO MEMORIA, HD, CPU 
         //TODO: Alertas Temperatura GPU/CPU/FONTE
+        //TODO: Correção da Versão do Windows
+        //TODO: MODELO MAQUINA
+
+        //PRO
+        //Envia os dados para uma API
+        //Executa Comandos a distancia
+        //Dispara esses alertas para API
+        //Tira Prints para Monitoramento
+        //Verifica os sites digitados
+        //Analisa se o cara esta trabalhando
 
         private void btnReload_Click(object sender, EventArgs e)
         {
