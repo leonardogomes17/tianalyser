@@ -19,6 +19,11 @@ namespace tianaliser
             InitializeComponent();
         }
 
+        //TODO: Add Office Serial Key Detection
+        //TODO: Se possui wifi / bluetooth / cabo 
+        //TODO: Alertas 90 PORCENTO USO MEMORIA, HD, CPU 
+        //TODO: Alertas Temperatura GPU/CPU/FONTE
+
         private void btnReload_Click(object sender, EventArgs e)
         {
             this.Text += " v" + Application.ProductVersion;
