@@ -39,131 +39,317 @@
             this.lblUser = new System.Windows.Forms.Label();
             this.lblMotherBoardProcessor = new System.Windows.Forms.Label();
             this.lblDriverRom = new System.Windows.Forms.Label();
+            this.lblRamSlots = new System.Windows.Forms.Label();
+            this.panelSystemInfo = new System.Windows.Forms.Panel();
+            this.panelHardware = new System.Windows.Forms.Panel();
+            this.panelGPU = new System.Windows.Forms.Panel();
+            this.panelBIOS = new System.Windows.Forms.Panel();
+            this.panelPowerSupply = new System.Windows.Forms.Panel();
+            this.panelStorage = new System.Windows.Forms.Panel();
+            this.panelMemory = new System.Windows.Forms.Panel();
+            this.lblTitle = new System.Windows.Forms.Label();
+            this.lblGPU = new System.Windows.Forms.Label();
+            this.lblBIOS = new System.Windows.Forms.Label();
+            this.lblPowerSupply = new System.Windows.Forms.Label();
+            this.scrollPanel = new System.Windows.Forms.Panel();
+            this.panelSystemInfo.SuspendLayout();
+            this.panelHardware.SuspendLayout();
+            this.panelGPU.SuspendLayout();
+            this.panelBIOS.SuspendLayout();
+            this.panelPowerSupply.SuspendLayout();
+            this.panelStorage.SuspendLayout();
+            this.panelMemory.SuspendLayout();
+            this.scrollPanel.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // lblTitle
+            // 
+            this.lblTitle.AutoSize = true;
+            this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
+            this.lblTitle.Location = new System.Drawing.Point(20, 15);
+            this.lblTitle.Name = "lblTitle";
+            this.lblTitle.Size = new System.Drawing.Size(200, 32);
+            this.lblTitle.TabIndex = 0;
+            this.lblTitle.Text = "🔍 TI Analyzer Pro";
+            this.lblTitle.BringToFront();
             // 
             // btnReload
             // 
-            this.btnReload.Enabled = false;
-            this.btnReload.Location = new System.Drawing.Point(463, 12);
+            this.btnReload.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
+            this.btnReload.FlatAppearance.BorderSize = 0;
+            this.btnReload.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnReload.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnReload.ForeColor = System.Drawing.Color.White;
+            this.btnReload.Location = new System.Drawing.Point(650, 15);
             this.btnReload.Name = "btnReload";
-            this.btnReload.Size = new System.Drawing.Size(124, 50);
-            this.btnReload.TabIndex = 0;
-            this.btnReload.Text = "Reload";
-            this.btnReload.UseVisualStyleBackColor = true;
+            this.btnReload.Size = new System.Drawing.Size(120, 35);
+            this.btnReload.TabIndex = 1;
+            this.btnReload.Text = "🔄 Atualizar";
+            this.btnReload.UseVisualStyleBackColor = false;
             this.btnReload.Visible = false;
+            this.btnReload.BringToFront();
             this.btnReload.Click += new System.EventHandler(this.btnReload_Click);
+            // 
+            // panelSystemInfo
+            // 
+            this.panelSystemInfo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(249)))), ((int)(((byte)(250)))));
+            this.panelSystemInfo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelSystemInfo.Controls.Add(this.lblMac);
+            this.panelSystemInfo.Controls.Add(this.lblSerialWindows);
+            this.panelSystemInfo.Controls.Add(this.lblWindowsVersion);
+            this.panelSystemInfo.Controls.Add(this.lblWinVersion);
+            this.panelSystemInfo.Controls.Add(this.lblBits);
+            this.panelSystemInfo.Controls.Add(this.lblUser);
+            this.panelSystemInfo.Location = new System.Drawing.Point(20, 20);
+            this.panelSystemInfo.Name = "panelSystemInfo";
+            this.panelSystemInfo.Size = new System.Drawing.Size(750, 180);
+            this.panelSystemInfo.TabIndex = 2;
             // 
             // lblMac
             // 
-            this.lblMac.AutoSize = true;
-            this.lblMac.Location = new System.Drawing.Point(12, 13);
+            this.lblMac.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblMac.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            this.lblMac.Location = new System.Drawing.Point(15, 20);
             this.lblMac.Name = "lblMac";
-            this.lblMac.Size = new System.Drawing.Size(39, 13);
-            this.lblMac.TabIndex = 1;
-            this.lblMac.Text = "MAC : ";
+            this.lblMac.Size = new System.Drawing.Size(720, 20);
+            this.lblMac.TabIndex = 0;
+            this.lblMac.Text = "🌐 MAC Address: ";
             // 
             // lblSerialWindows
             // 
-            this.lblSerialWindows.AutoSize = true;
-            this.lblSerialWindows.Location = new System.Drawing.Point(12, 50);
+            this.lblSerialWindows.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblSerialWindows.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            this.lblSerialWindows.Location = new System.Drawing.Point(15, 45);
             this.lblSerialWindows.Name = "lblSerialWindows";
-            this.lblSerialWindows.Size = new System.Drawing.Size(110, 13);
-            this.lblSerialWindows.TabIndex = 2;
-            this.lblSerialWindows.Text = "SERIAL WINDOWS: ";
+            this.lblSerialWindows.Size = new System.Drawing.Size(720, 20);
+            this.lblSerialWindows.TabIndex = 1;
+            this.lblSerialWindows.Text = "🔑 Serial Windows: ";
             // 
             // lblWindowsVersion
             // 
-            this.lblWindowsVersion.AutoSize = true;
-            this.lblWindowsVersion.Location = new System.Drawing.Point(12, 85);
+            this.lblWindowsVersion.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblWindowsVersion.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            this.lblWindowsVersion.Location = new System.Drawing.Point(15, 70);
             this.lblWindowsVersion.Name = "lblWindowsVersion";
-            this.lblWindowsVersion.Size = new System.Drawing.Size(82, 13);
-            this.lblWindowsVersion.TabIndex = 3;
-            this.lblWindowsVersion.Text = "WIN VERSÃO: ";
+            this.lblWindowsVersion.Size = new System.Drawing.Size(720, 20);
+            this.lblWindowsVersion.TabIndex = 2;
+            this.lblWindowsVersion.Text = "🖥️ Windows Version: ";
             // 
             // lblWinVersion
             // 
-            this.lblWinVersion.AutoSize = true;
-            this.lblWinVersion.Location = new System.Drawing.Point(12, 119);
+            this.lblWinVersion.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblWinVersion.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            this.lblWinVersion.Location = new System.Drawing.Point(15, 95);
             this.lblWinVersion.Name = "lblWinVersion";
-            this.lblWinVersion.Size = new System.Drawing.Size(82, 13);
-            this.lblWinVersion.TabIndex = 4;
-            this.lblWinVersion.Text = "WIN VERSÃO: ";
+            this.lblWinVersion.Size = new System.Drawing.Size(720, 20);
+            this.lblWinVersion.TabIndex = 3;
+            this.lblWinVersion.Text = "📋 Windows Info: ";
             // 
             // lblBits
             // 
-            this.lblBits.AutoSize = true;
-            this.lblBits.Location = new System.Drawing.Point(12, 149);
+            this.lblBits.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblBits.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            this.lblBits.Location = new System.Drawing.Point(15, 120);
             this.lblBits.Name = "lblBits";
-            this.lblBits.Size = new System.Drawing.Size(40, 13);
-            this.lblBits.TabIndex = 5;
-            this.lblBits.Text = "BITS : ";
-            // 
-            // lblMemory
-            // 
-            this.lblMemory.AutoSize = true;
-            this.lblMemory.Location = new System.Drawing.Point(12, 180);
-            this.lblMemory.Name = "lblMemory";
-            this.lblMemory.Size = new System.Drawing.Size(67, 13);
-            this.lblMemory.TabIndex = 6;
-            this.lblMemory.Text = "MEMORIA : ";
-            // 
-            // lblHds
-            // 
-            this.lblHds.Location = new System.Drawing.Point(12, 211);
-            this.lblHds.Name = "lblHds";
-            this.lblHds.Size = new System.Drawing.Size(412, 33);
-            this.lblHds.TabIndex = 7;
-            this.lblHds.Text = "HDS : ";
+            this.lblBits.Size = new System.Drawing.Size(720, 20);
+            this.lblBits.TabIndex = 4;
+            this.lblBits.Text = "⚙️ Architecture: ";
             // 
             // lblUser
             // 
-            this.lblUser.AutoSize = true;
-            this.lblUser.Location = new System.Drawing.Point(12, 271);
+            this.lblUser.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblUser.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            this.lblUser.Location = new System.Drawing.Point(15, 145);
             this.lblUser.Name = "lblUser";
-            this.lblUser.Size = new System.Drawing.Size(65, 13);
-            this.lblUser.TabIndex = 8;
-            this.lblUser.Text = "USUARIO : ";
+            this.lblUser.Size = new System.Drawing.Size(720, 20);
+            this.lblUser.TabIndex = 5;
+            this.lblUser.Text = "👤 User Info: ";
+            // 
+            // panelHardware
+            // 
+            this.panelHardware.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(249)))), ((int)(((byte)(250)))));
+            this.panelHardware.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelHardware.Controls.Add(this.lblMotherBoardProcessor);
+            this.panelHardware.Controls.Add(this.lblDriverRom);
+            this.panelHardware.Location = new System.Drawing.Point(20, 220);
+            this.panelHardware.Name = "panelHardware";
+            this.panelHardware.Size = new System.Drawing.Size(750, 100);
+            this.panelHardware.TabIndex = 3;
             // 
             // lblMotherBoardProcessor
             // 
-            this.lblMotherBoardProcessor.AutoSize = true;
-            this.lblMotherBoardProcessor.Location = new System.Drawing.Point(12, 307);
+            this.lblMotherBoardProcessor.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblMotherBoardProcessor.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            this.lblMotherBoardProcessor.Location = new System.Drawing.Point(15, 20);
             this.lblMotherBoardProcessor.Name = "lblMotherBoardProcessor";
-            this.lblMotherBoardProcessor.Size = new System.Drawing.Size(171, 13);
-            this.lblMotherBoardProcessor.TabIndex = 9;
-            this.lblMotherBoardProcessor.Text = "PLACA MÃE E PROCESSADOR : ";
+            this.lblMotherBoardProcessor.Size = new System.Drawing.Size(720, 20);
+            this.lblMotherBoardProcessor.TabIndex = 0;
+            this.lblMotherBoardProcessor.Text = "🔧 Motherboard & Processor: ";
             // 
             // lblDriverRom
             // 
-            this.lblDriverRom.AutoSize = true;
-            this.lblDriverRom.Location = new System.Drawing.Point(12, 339);
+            this.lblDriverRom.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblDriverRom.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            this.lblDriverRom.Location = new System.Drawing.Point(15, 50);
             this.lblDriverRom.Name = "lblDriverRom";
-            this.lblDriverRom.Size = new System.Drawing.Size(111, 13);
-            this.lblDriverRom.TabIndex = 10;
-            this.lblDriverRom.Text = "DRIVER DE DISCO : ";
+            this.lblDriverRom.Size = new System.Drawing.Size(720, 20);
+            this.lblDriverRom.TabIndex = 1;
+            this.lblDriverRom.Text = "💿 Optical Drive: ";
+            // 
+            // panelGPU
+            // 
+            this.panelGPU.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(249)))), ((int)(((byte)(250)))));
+            this.panelGPU.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelGPU.Controls.Add(this.lblGPU);
+            this.panelGPU.Location = new System.Drawing.Point(20, 340);
+            this.panelGPU.Name = "panelGPU";
+            this.panelGPU.Size = new System.Drawing.Size(750, 80);
+            this.panelGPU.TabIndex = 4;
+            // 
+            // lblGPU
+            // 
+            this.lblGPU.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblGPU.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            this.lblGPU.Location = new System.Drawing.Point(15, 20);
+            this.lblGPU.Name = "lblGPU";
+            this.lblGPU.Size = new System.Drawing.Size(720, 50);
+            this.lblGPU.TabIndex = 0;
+            this.lblGPU.Text = "🎮 Graphics Card: ";
+            // 
+            // panelBIOS
+            // 
+            this.panelBIOS.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(249)))), ((int)(((byte)(250)))));
+            this.panelBIOS.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelBIOS.Controls.Add(this.lblBIOS);
+            this.panelBIOS.Location = new System.Drawing.Point(20, 440);
+            this.panelBIOS.Name = "panelBIOS";
+            this.panelBIOS.Size = new System.Drawing.Size(750, 80);
+            this.panelBIOS.TabIndex = 5;
+            // 
+            // lblBIOS
+            // 
+            this.lblBIOS.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblBIOS.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            this.lblBIOS.Location = new System.Drawing.Point(15, 20);
+            this.lblBIOS.Name = "lblBIOS";
+            this.lblBIOS.Size = new System.Drawing.Size(720, 50);
+            this.lblBIOS.TabIndex = 0;
+            this.lblBIOS.Text = "🔧 BIOS Information: ";
+            // 
+            // panelPowerSupply
+            // 
+            this.panelPowerSupply.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(249)))), ((int)(((byte)(250)))));
+            this.panelPowerSupply.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelPowerSupply.Controls.Add(this.lblPowerSupply);
+            this.panelPowerSupply.Location = new System.Drawing.Point(20, 540);
+            this.panelPowerSupply.Name = "panelPowerSupply";
+            this.panelPowerSupply.Size = new System.Drawing.Size(750, 80);
+            this.panelPowerSupply.TabIndex = 6;
+            // 
+            // lblPowerSupply
+            // 
+            this.lblPowerSupply.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblPowerSupply.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            this.lblPowerSupply.Location = new System.Drawing.Point(15, 20);
+            this.lblPowerSupply.Name = "lblPowerSupply";
+            this.lblPowerSupply.Size = new System.Drawing.Size(720, 50);
+            this.lblPowerSupply.TabIndex = 0;
+            this.lblPowerSupply.Text = "⚡ Power Supply: ";
+            // 
+            // panelStorage
+            // 
+            this.panelStorage.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(249)))), ((int)(((byte)(250)))));
+            this.panelStorage.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelStorage.Controls.Add(this.lblMemory);
+            this.panelStorage.Controls.Add(this.lblHds);
+            this.panelStorage.Location = new System.Drawing.Point(20, 640);
+            this.panelStorage.Name = "panelStorage";
+            this.panelStorage.Size = new System.Drawing.Size(750, 120);
+            this.panelStorage.TabIndex = 7;
+            // 
+            // lblMemory
+            // 
+            this.lblMemory.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblMemory.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            this.lblMemory.Location = new System.Drawing.Point(15, 20);
+            this.lblMemory.Name = "lblMemory";
+            this.lblMemory.Size = new System.Drawing.Size(720, 20);
+            this.lblMemory.TabIndex = 0;
+            this.lblMemory.Text = "💾 Total Memory: ";
+            // 
+            // lblHds
+            // 
+            this.lblHds.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblHds.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            this.lblHds.Location = new System.Drawing.Point(15, 50);
+            this.lblHds.Name = "lblHds";
+            this.lblHds.Size = new System.Drawing.Size(720, 60);
+            this.lblHds.TabIndex = 1;
+            this.lblHds.Text = "💿 Storage Devices: ";
+            // 
+            // panelMemory
+            // 
+            this.panelMemory.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(249)))), ((int)(((byte)(250)))));
+            this.panelMemory.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelMemory.Controls.Add(this.lblRamSlots);
+            this.panelMemory.Location = new System.Drawing.Point(20, 780);
+            this.panelMemory.Name = "panelMemory";
+            this.panelMemory.Size = new System.Drawing.Size(750, 150);
+            this.panelMemory.TabIndex = 8;
+            // 
+            // lblRamSlots
+            // 
+            this.lblRamSlots.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblRamSlots.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(73)))), ((int)(((byte)(94)))));
+            this.lblRamSlots.Location = new System.Drawing.Point(15, 20);
+            this.lblRamSlots.Name = "lblRamSlots";
+            this.lblRamSlots.Size = new System.Drawing.Size(720, 120);
+            this.lblRamSlots.TabIndex = 0;
+            this.lblRamSlots.Text = "🧠 RAM Slots: ";
+            // 
+            // scrollPanel
+            // 
+            this.scrollPanel.AutoScroll = true;
+            this.scrollPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
+            this.scrollPanel.Controls.Add(this.panelMemory);
+            this.scrollPanel.Controls.Add(this.panelStorage);
+            this.scrollPanel.Controls.Add(this.panelPowerSupply);
+            this.scrollPanel.Controls.Add(this.panelBIOS);
+            this.scrollPanel.Controls.Add(this.panelGPU);
+            this.scrollPanel.Controls.Add(this.panelHardware);
+            this.scrollPanel.Controls.Add(this.panelSystemInfo);
+            this.scrollPanel.Location = new System.Drawing.Point(0, 60);
+            this.scrollPanel.Name = "scrollPanel";
+            this.scrollPanel.Size = new System.Drawing.Size(800, 540);
+            this.scrollPanel.TabIndex = 0;
             // 
             // FormTiAnalyzer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(599, 397);
-            this.Controls.Add(this.lblDriverRom);
-            this.Controls.Add(this.lblMotherBoardProcessor);
-            this.Controls.Add(this.lblUser);
-            this.Controls.Add(this.lblHds);
-            this.Controls.Add(this.lblMemory);
-            this.Controls.Add(this.lblBits);
-            this.Controls.Add(this.lblWinVersion);
-            this.Controls.Add(this.lblWindowsVersion);
-            this.Controls.Add(this.lblSerialWindows);
-            this.Controls.Add(this.lblMac);
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
+            this.ClientSize = new System.Drawing.Size(800, 600);
+            this.Controls.Add(this.scrollPanel);
             this.Controls.Add(this.btnReload);
+            this.Controls.Add(this.lblTitle);
+            this.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "FormTiAnalyzer";
             this.ShowIcon = false;
-            this.Text = "TI Analyzer";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "TI Analyzer Pro - System Information Tool";
             this.Load += new System.EventHandler(this.FormTiAnalyzer_Load);
+            this.panelSystemInfo.ResumeLayout(false);
+            this.panelHardware.ResumeLayout(false);
+            this.panelGPU.ResumeLayout(false);
+            this.panelBIOS.ResumeLayout(false);
+            this.panelPowerSupply.ResumeLayout(false);
+            this.panelStorage.ResumeLayout(false);
+            this.panelMemory.ResumeLayout(false);
+            this.scrollPanel.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -182,6 +368,19 @@
         private System.Windows.Forms.Label lblUser;
         private System.Windows.Forms.Label lblMotherBoardProcessor;
         private System.Windows.Forms.Label lblDriverRom;
+        private System.Windows.Forms.Label lblRamSlots;
+        private System.Windows.Forms.Panel panelSystemInfo;
+        private System.Windows.Forms.Panel panelHardware;
+        private System.Windows.Forms.Panel panelGPU;
+        private System.Windows.Forms.Panel panelBIOS;
+        private System.Windows.Forms.Panel panelPowerSupply;
+        private System.Windows.Forms.Panel panelStorage;
+        private System.Windows.Forms.Panel panelMemory;
+        private System.Windows.Forms.Label lblTitle;
+        private System.Windows.Forms.Label lblGPU;
+        private System.Windows.Forms.Label lblBIOS;
+        private System.Windows.Forms.Label lblPowerSupply;
+        private System.Windows.Forms.Panel scrollPanel;
     }
 }
 

@@ -8,6 +8,7 @@ using System.Collections;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Management;
+using System.Collections.Generic;
 
 namespace tianaliser
 {
@@ -20,22 +21,26 @@ namespace tianaliser
 
         private void btnReload_Click(object sender, EventArgs e)
         {
-            this.Text += Application.ProductVersion;
+            this.Text += " v" + Application.ProductVersion;
             lblMac.Text += getMacAddress();
             lblSerialWindows.Text += GetWindowsProductKey();
             lblWindowsVersion.Text += Environment.OSVersion.ToString();
             lblWinVersion.Text += getOSInfo();
             if (InternalCheckIsWow64())
             {
-                lblBits.Text += "64 BITS";
+                lblBits.Text += "64-bit";
             }
-            else { lblBits.Text += "32 BITS"; }
+            else { lblBits.Text += "32-bit"; }
             DisplayTotalRam(lblMemory);
             getHDS();
-            lblUser.Text = "NOME USUARIO: " + Environment.UserName + " MAQUINA NOME :  " + Environment.MachineName + " NOME DOMINIO: " + Environment.UserDomainName;
+            lblUser.Text = "👤 User: " + Environment.UserName + " | 🖥️ Machine: " + Environment.MachineName + " | 🌐 Domain: " + Environment.UserDomainName;
             ProcessorAndMotherBoard();
-            lblMotherBoardProcessor.Text += " NUCLEOS : " + Environment.ProcessorCount;
+            lblMotherBoardProcessor.Text += " | ⚙️ Cores: " + Environment.ProcessorCount;
             lblDriverRom.Text += DetectedDriverRom();
+            lblGPU.Text += GetGPUInfo();
+            lblBIOS.Text += GetBIOSInfo();
+            lblPowerSupply.Text += GetPowerSupplyInfo();
+            lblRamSlots.Text += GetSlotsRam();
         }
 
         //Get Version Windows Simplify
@@ -297,16 +302,143 @@ namespace tianaliser
                 UInt32 SizeinKB = Convert.ToUInt32(WniPART.Properties["MaxCapacity"].Value);
                 UInt32 SizeinMB = SizeinKB / 1024;
                 UInt32 SizeinGB = SizeinMB / 1024;
-                labelStatus.Text += string.Format("TAMANHO EM KB: {0}, TAMANHO EM MB: {1}, TAMANHO EM GB: {2}", SizeinKB, SizeinMB, SizeinGB);
+                labelStatus.Text += string.Format("💾 Total: {0}GB ({1}MB) | Max Capacity: {2}KB", SizeinGB, SizeinMB, SizeinKB);
             } 
         }
 
-        //Slots and Speed not implemented
+        //Slots and Speed - Implemented to get RAM slots information with DDR type detection
         private string GetSlotsRam()
         {
-            //wmic MemPhysical get MemoryDevices, MaxCapacity
-            // wmic memorychip get speed, caption
-            return "";
+            try
+            {
+                // Obter informações sobre slots de memória física
+                string queryPhysicalMemory = "SELECT MemoryDevices FROM Win32_PhysicalMemoryArray";
+                ManagementObjectSearcher searcherPhysical = new ManagementObjectSearcher(queryPhysicalMemory);
+                
+                int totalSlots = 0;
+                foreach (ManagementObject obj in searcherPhysical.Get())
+                {
+                    if (obj["MemoryDevices"] != null)
+                    {
+                        totalSlots = Convert.ToInt32(obj["MemoryDevices"]);
+                    }
+                }
+
+                // Obter informações sobre módulos de memória instalados
+                string queryMemoryChips = "SELECT Capacity, Speed, Manufacturer, PartNumber, MemoryType, SMBIOSMemoryType FROM Win32_PhysicalMemory";
+                ManagementObjectSearcher searcherChips = new ManagementObjectSearcher(queryMemoryChips);
+                
+                int usedSlots = 0;
+                string memoryInfo = "";
+                
+                foreach (ManagementObject obj in searcherChips.Get())
+                {
+                    usedSlots++;
+                    
+                    // Converter capacidade de bytes para GB
+                    ulong capacityBytes = Convert.ToUInt64(obj["Capacity"]);
+                    double capacityGB = capacityBytes / (1024.0 * 1024.0 * 1024.0);
+                    
+                    string manufacturer = obj["Manufacturer"]?.ToString() ?? "Desconhecido";
+                    string partNumber = obj["PartNumber"]?.ToString() ?? "Desconhecido";
+                    string speed = obj["Speed"]?.ToString() ?? "Desconhecido";
+                    
+                    // Identificar tipo de memória DDR
+                    string ddrType = GetDDRType(obj);
+                    
+                    memoryInfo += $"Slot {usedSlots}: {capacityGB:F2}GB - {manufacturer} {partNumber} - {ddrType} - {speed}MHz\n";
+                }
+
+                int freeSlots = totalSlots - usedSlots;
+                
+                string result = $"SLOTS TOTAIS: {totalSlots}\n";
+                result += $"SLOTS USADOS: {usedSlots}\n";
+                result += $"SLOTS LIVRES: {freeSlots}\n\n";
+                result += "DETALHES DOS MÓDULOS:\n" + memoryInfo;
+                
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return $"Erro ao obter informações dos slots de RAM: {ex.Message}";
+            }
+        }
+
+        // Método auxiliar para identificar o tipo de DDR
+        private string GetDDRType(ManagementObject memoryObj)
+        {
+            try
+            {
+                // Tentar obter o tipo de memória do SMBIOS
+                if (memoryObj["SMBIOSMemoryType"] != null)
+                {
+                    int smbiosType = Convert.ToInt32(memoryObj["SMBIOSMemoryType"]);
+                    return GetDDRTypeFromSMBIOS(smbiosType);
+                }
+                
+                // Tentar obter o tipo de memória padrão
+                if (memoryObj["MemoryType"] != null)
+                {
+                    int memoryType = Convert.ToInt32(memoryObj["MemoryType"]);
+                    return GetDDRTypeFromMemoryType(memoryType);
+                }
+                
+                // Se não conseguir identificar pelo WMI, tentar pela velocidade
+                if (memoryObj["Speed"] != null)
+                {
+                    int speed = Convert.ToInt32(memoryObj["Speed"]);
+                    return GetDDRTypeFromSpeed(speed);
+                }
+                
+                return "DDR Desconhecido";
+            }
+            catch
+            {
+                return "DDR Desconhecido";
+            }
+        }
+
+        // Identificar DDR pelo tipo SMBIOS
+        private string GetDDRTypeFromSMBIOS(int smbiosType)
+        {
+            switch (smbiosType)
+            {
+                case 20: return "DDR";
+                case 21: return "DDR2";
+                case 22: return "DDR2 FB-DIMM";
+                case 24: return "DDR3";
+                case 26: return "DDR4";
+                case 28: return "DDR5";
+                case 30: return "DDR5";
+                default: return $"DDR (SMBIOS: {smbiosType})";
+            }
+        }
+
+        // Identificar DDR pelo tipo de memória padrão
+        private string GetDDRTypeFromMemoryType(int memoryType)
+        {
+            switch (memoryType)
+            {
+                case 20: return "DDR";
+                case 21: return "DDR2";
+                case 22: return "DDR2 FB-DIMM";
+                case 24: return "DDR3";
+                case 26: return "DDR4";
+                case 28: return "DDR5";
+                case 30: return "DDR5";
+                default: return $"DDR (Tipo: {memoryType})";
+            }
+        }
+
+        // Identificar DDR pela velocidade (fallback)
+        private string GetDDRTypeFromSpeed(int speed)
+        {
+            if (speed <= 400) return "DDR";
+            if (speed <= 800) return "DDR2";
+            if (speed <= 1600) return "DDR3";
+            if (speed <= 3200) return "DDR4";
+            if (speed <= 6400) return "DDR5";
+            return "DDR5+";
         }
 
         //Get Driver Rom
@@ -316,27 +448,50 @@ namespace tianaliser
             foreach (System.IO.DriveInfo drive in drives)
             {
                 if (drive.DriveType == System.IO.DriveType.CDRom)
-                  go += "POSSUI DRIVER DE LEITOR : " +  (drive.Name);
+                  go += "💿 Optical Drive: " +  (drive.Name);
             }
             if(go == ""){
-              go = "NÃO POSSUI CD/DVD/BLURAY";
+              go = "❌ No optical drive detected";
             }
 
             return go;
         }
 
-        //Get HD - Space Disk Free
+        //Get HD - Space Disk Free with Storage Type Detection
         private void getHDS() {
+            try
+            {
+                // Obter informações dos discos físicos
+                string queryDiskDrive = "SELECT Model, MediaType, InterfaceType, Size, SerialNumber FROM Win32_DiskDrive";
+                ManagementObjectSearcher searcherDiskDrive = new ManagementObjectSearcher(queryDiskDrive);
+                
+                // Obter informações dos discos lógicos
             ConnectionOptions opt = new ConnectionOptions();
             ObjectQuery oQuery = new ObjectQuery("SELECT Size, FreeSpace, Name, FileSystem FROM Win32_LogicalDisk WHERE DriveType = 3");
-            //ManagementScope scope = new ManagementScope("\\\\<meu servidor>\\root\\cimv2", opt);
-            ManagementScope scope = new ManagementScope("\\\\localhost\\root\\cimv2", opt); //Get for IP
+                ManagementScope scope = new ManagementScope("\\\\localhost\\root\\cimv2", opt);
             ManagementObjectSearcher moSearcher = new ManagementObjectSearcher(scope, oQuery);
             ManagementObjectCollection collection = moSearcher.Get();
+                
+                // Criar dicionário para mapear discos físicos
+                Dictionary<string, string> diskTypes = new Dictionary<string, string>();
+                Dictionary<string, string> diskModels = new Dictionary<string, string>();
+                
+                foreach (ManagementObject disk in searcherDiskDrive.Get())
+                {
+                    string model = disk["Model"]?.ToString() ?? "Desconhecido";
+                    string mediaType = disk["MediaType"]?.ToString() ?? "";
+                    string interfaceType = disk["InterfaceType"]?.ToString() ?? "";
+                    string serialNumber = disk["SerialNumber"]?.ToString() ?? "";
+                    
+                    string storageType = GetStorageType(model, mediaType, interfaceType);
+                    string diskKey = $"{model}_{serialNumber}";
+                    
+                    diskTypes[diskKey] = storageType;
+                    diskModels[diskKey] = model;
+                }
+                
             foreach (ManagementObject res in collection)
             {
-                //if (res["Name"].ToString() == "C:")
-                //{
                     decimal size = Convert.ToDecimal(res["Size"]) / 1024 / 1024 / 1024;
                     decimal freeSpace = Convert.ToDecimal(res["FreeSpace"]) / 1024 / 1024 / 1024;
                     string unidade = res["Name"].ToString();
@@ -344,45 +499,359 @@ namespace tianaliser
                     decimal livre = Decimal.Round(freeSpace, 2);
                     decimal usado = Decimal.Round(size - freeSpace, 2);
                     decimal livrepercent = Decimal.Round(usado / size, 2) * 100;
-                    //if (livrepercent > parametro)
-                    //{
-                    //    unTPC.ForeColor = Color.Red;
-                    //    tamTPC.ForeColor = Color.Red;
-                    //    liTPC.ForeColor = Color.Red;
-                    //    imgTPC.Visible = true;
-                    //    SystemSounds.Question.Play();
-                    //}
-                    lblHds.Text += " UNIDADE : " + unidade + " TAMANHO : " + tamanho.ToString() + " LIVRE : " + livre.ToString() + " USADO : " + usado;
-                //}
-                //if (res["Name"].ToString() == "D:")
-                //{
-                //    decimal size = Convert.ToDecimal(res["Size"]) / 1024 / 1024 / 1024;
-                //    decimal freeSpace = Convert.ToDecimal(res["FreeSpace"]) / 1024 / 1024 / 1024;
-                //    string unidade = res["Name"].ToString();
-                //    decimal tamanho = Decimal.Round(size, 2);
-                //    decimal livre = Decimal.Round(freeSpace, 2);
-                //    decimal usado = Decimal.Round(size - freeSpace, 2);
-                //    decimal livrepercent = Decimal.Round(usado / size, 2) * 100;
-                //    if (livrepercent > parametro)
-                //    {
-                //        un2TPC.ForeColor = Color.Red;
-                //        tam2TPC.ForeColor = Color.Red;
-                //        li2TPC.ForeColor = Color.Red;
-                //        imgTPC.Visible = true;
-                //        SystemSounds.Question.Play();
-                //    }
-                //    un2TPC.Text += unidade;
-                //    un2TPC.Refresh();
-                //    un2TPC.Visible = true;
-                //    tam2TPC.Text += tamanho.ToString();
-                //    tam2TPC.Refresh();
-                //    tam2TPC.Visible = true;
-                //    li2TPC.Text += livre.ToString();
-                //    li2TPC.Refresh();
-                //    li2TPC.Visible = true;
-                //}
+                    
+                    // Tentar identificar o tipo de armazenamento
+                    string storageType = "Desconhecido";
+                    foreach (var kvp in diskTypes)
+                    {
+                        if (kvp.Value != "Desconhecido")
+                        {
+                            storageType = kvp.Value;
+                            break;
+                        }
+                    }
+                    
+                    lblHds.Text += $" UNIDADE: {unidade} TAMANHO: {tamanho}GB LIVRE: {livre}GB USADO: {usado}GB TIPO: {storageType}\n";
+                }
             }
-        
+            catch (Exception ex)
+            {
+                lblHds.Text += $" Erro ao obter informações dos discos: {ex.Message}";
+            }
+        }
+
+        // Método auxiliar para identificar o tipo de armazenamento
+        private string GetStorageType(string model, string mediaType, string interfaceType)
+        {
+            try
+            {
+                // Converter para minúsculas para comparação
+                string modelLower = model.ToLower();
+                string mediaTypeLower = mediaType.ToLower();
+                string interfaceTypeLower = interfaceType.ToLower();
+                
+                // Verificar por NVMe
+                if (modelLower.Contains("nvme") || interfaceTypeLower.Contains("nvme"))
+                {
+                    return "NVMe SSD";
+                }
+                
+                // Verificar por SSD
+                if (modelLower.Contains("ssd") || 
+                    modelLower.Contains("solid state") || 
+                    mediaTypeLower.Contains("ssd") ||
+                    modelLower.Contains("m.2") ||
+                    modelLower.Contains("m2"))
+                {
+                    return "SSD";
+                }
+                
+                // Verificar por HDD
+                if (modelLower.Contains("hdd") || 
+                    modelLower.Contains("hard disk") || 
+                    mediaTypeLower.Contains("hdd") ||
+                    mediaTypeLower.Contains("fixed hard disk") ||
+                    interfaceTypeLower.Contains("ide") ||
+                    interfaceTypeLower.Contains("sata"))
+                {
+                    return "HDD";
+                }
+                
+                // Verificar por interface específica
+                if (interfaceTypeLower.Contains("nvme"))
+                {
+                    return "NVMe SSD";
+                }
+                else if (interfaceTypeLower.Contains("sata"))
+                {
+                    // SATA pode ser HDD ou SSD, verificar pelo modelo
+                    if (modelLower.Contains("ssd") || modelLower.Contains("solid state"))
+                    {
+                        return "SATA SSD";
+                    }
+                    else
+                    {
+                        return "SATA HDD";
+                    }
+                }
+                else if (interfaceTypeLower.Contains("ide"))
+                {
+                    return "IDE HDD";
+                }
+                else if (interfaceTypeLower.Contains("scsi"))
+                {
+                    return "SCSI HDD";
+                }
+                
+                // Verificar por tipo de mídia específico
+                if (mediaTypeLower.Contains("ssd"))
+                {
+                    return "SSD";
+                }
+                else if (mediaTypeLower.Contains("hdd") || mediaTypeLower.Contains("fixed hard disk"))
+                {
+                    return "HDD";
+                }
+                
+                // Fallback baseado no modelo
+                if (modelLower.Contains("intel") || modelLower.Contains("samsung") || modelLower.Contains("crucial"))
+                {
+                    if (modelLower.Contains("nvme") || modelLower.Contains("m.2"))
+                    {
+                        return "NVMe SSD";
+                    }
+                    else if (modelLower.Contains("ssd"))
+                    {
+                        return "SSD";
+                    }
+                }
+                
+                return "Desconhecido";
+            }
+            catch
+            {
+                return "Desconhecido";
+            }
+        }
+
+        //Get GPU Information
+        private string GetGPUInfo()
+        {
+            try
+            {
+                string queryGPU = "SELECT Name, DriverVersion, DriverDate, VideoMemoryType, AdapterRAM FROM Win32_VideoController WHERE VideoMemoryType IS NOT NULL";
+                ManagementObjectSearcher searcherGPU = new ManagementObjectSearcher(queryGPU);
+                
+                string gpuInfo = "";
+                int gpuCount = 0;
+                
+                foreach (ManagementObject gpu in searcherGPU.Get())
+                {
+                    gpuCount++;
+                    string name = gpu["Name"]?.ToString() ?? "Unknown";
+                    string driverVersion = gpu["DriverVersion"]?.ToString() ?? "Unknown";
+                    string driverDate = gpu["DriverDate"]?.ToString() ?? "Unknown";
+                    string memoryType = gpu["VideoMemoryType"]?.ToString() ?? "Unknown";
+                    string adapterRAM = gpu["AdapterRAM"]?.ToString() ?? "Unknown";
+                    
+                    // Converter memória de bytes para MB/GB
+                    string memorySize = "Unknown";
+                    if (adapterRAM != "Unknown" && adapterRAM != "")
+                    {
+                        try
+                        {
+                            long ramBytes = Convert.ToInt64(adapterRAM);
+                            if (ramBytes > 0)
+                            {
+                                double ramMB = ramBytes / (1024.0 * 1024.0);
+                                double ramGB = ramMB / 1024.0;
+                                
+                                if (ramGB >= 1)
+                                {
+                                    memorySize = $"{ramGB:F1}GB";
+                                }
+                                else
+                                {
+                                    memorySize = $"{ramMB:F0}MB";
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            memorySize = "Unknown";
+                        }
+                    }
+                    
+                    // Determinar tipo de memória
+                    string memoryTypeText = GetVideoMemoryType(memoryType);
+                    
+                    if (gpuCount == 1)
+                    {
+                        gpuInfo += $"🎮 GPU {gpuCount}: {name} | 💾 VRAM: {memorySize} ({memoryTypeText}) | 🔧 Driver: {driverVersion}";
+                    }
+                    else
+                    {
+                        gpuInfo += $"\n🎮 GPU {gpuCount}: {name} | 💾 VRAM: {memorySize} ({memoryTypeText}) | 🔧 Driver: {driverVersion}";
+                    }
+                }
+                
+                if (gpuCount == 0)
+                {
+                    gpuInfo = "❌ No dedicated graphics card detected (using integrated graphics)";
+                }
+                
+                return gpuInfo;
+            }
+            catch (Exception ex)
+            {
+                return $"❌ Error detecting GPU: {ex.Message}";
+            }
+        }
+
+        // Método auxiliar para identificar o tipo de memória de vídeo
+        private string GetVideoMemoryType(string memoryType)
+        {
+            switch (memoryType)
+            {
+                case "1": return "Other";
+                case "2": return "Unknown";
+                case "3": return "VRAM";
+                case "4": return "DRAM";
+                case "5": return "SRAM";
+                case "6": return "WRAM";
+                case "7": return "EDO RAM";
+                case "8": return "Burst Synchronous DRAM";
+                case "9": return "Pipelined Burst SRAM";
+                case "10": return "CDRAM";
+                case "11": return "3DRAM";
+                case "12": return "SDRAM";
+                case "13": return "SGRAM";
+                case "14": return "RDRAM";
+                case "15": return "DDR";
+                case "16": return "DDR2";
+                case "17": return "DDR2 FB-DIMM";
+                case "18": return "DDR3";
+                case "19": return "FBD2";
+                case "20": return "DDR4";
+                case "21": return "DDR5";
+                default: return "Unknown";
+            }
+        }
+
+        //Get BIOS Information including Serial Number
+        private string GetBIOSInfo()
+        {
+            try
+            {
+                string queryBIOS = "SELECT SerialNumber, Manufacturer, Version, ReleaseDate, SMBIOSBIOSVersion FROM Win32_BIOS";
+                ManagementObjectSearcher searcherBIOS = new ManagementObjectSearcher(queryBIOS);
+                
+                string biosInfo = "";
+                
+                foreach (ManagementObject bios in searcherBIOS.Get())
+                {
+                    string serialNumber = bios["SerialNumber"]?.ToString() ?? "Unknown";
+                    string manufacturer = bios["Manufacturer"]?.ToString() ?? "Unknown";
+                    string version = bios["Version"]?.ToString() ?? "Unknown";
+                    string releaseDate = bios["ReleaseDate"]?.ToString() ?? "Unknown";
+                    string smbiosVersion = bios["SMBIOSBIOSVersion"]?.ToString() ?? "Unknown";
+                    
+                    // Converter data de release se disponível
+                    string formattedDate = "Unknown";
+                    if (releaseDate != "Unknown" && releaseDate.Length >= 8)
+                    {
+                        try
+                        {
+                            string year = releaseDate.Substring(0, 4);
+                            string month = releaseDate.Substring(4, 2);
+                            string day = releaseDate.Substring(6, 2);
+                            formattedDate = $"{day}/{month}/{year}";
+                        }
+                        catch
+                        {
+                            formattedDate = releaseDate;
+                        }
+                    }
+                    
+                    biosInfo = $"🔧 Manufacturer: {manufacturer} | 📋 Version: {version} | 🔢 Serial: {serialNumber} | 📅 Release: {formattedDate} | 🏷️ SMBIOS: {smbiosVersion}";
+                }
+                
+                if (string.IsNullOrEmpty(biosInfo))
+                {
+                    biosInfo = "❌ BIOS information not available";
+                }
+                
+                return biosInfo;
+            }
+            catch (Exception ex)
+            {
+                return $"❌ Error detecting BIOS: {ex.Message}";
+            }
+        }
+
+        //Get Power Supply Information
+        private string GetPowerSupplyInfo()
+        {
+            try
+            {
+                string queryPowerSupply = "SELECT Name, Description, Status, PowerSupplyType, MaxPowerCapacityWatt FROM Win32_SystemEnclosure";
+                ManagementObjectSearcher searcherPowerSupply = new ManagementObjectSearcher(queryPowerSupply);
+                
+                string powerInfo = "";
+                
+                foreach (ManagementObject power in searcherPowerSupply.Get())
+                {
+                    string name = power["Name"]?.ToString() ?? "Unknown";
+                    string description = power["Description"]?.ToString() ?? "Unknown";
+                    string status = power["Status"]?.ToString() ?? "Unknown";
+                    string powerSupplyType = power["PowerSupplyType"]?.ToString() ?? "Unknown";
+                    string maxPower = power["MaxPowerCapacityWatt"]?.ToString() ?? "Unknown";
+                    
+                    // Determinar tipo de fonte
+                    string powerTypeText = GetPowerSupplyType(powerSupplyType);
+                    
+                    powerInfo = $"⚡ Type: {powerTypeText} | 🔋 Max Power: {maxPower}W | 📊 Status: {status} | 📝 Description: {description}";
+                }
+                
+                // Tentar obter informações adicionais via WMI alternativo
+                if (string.IsNullOrEmpty(powerInfo) || powerInfo.Contains("Unknown"))
+                {
+                    string queryBattery = "SELECT Name, Description, Status, EstimatedChargeRemaining FROM Win32_Battery";
+                    ManagementObjectSearcher searcherBattery = new ManagementObjectSearcher(queryBattery);
+                    
+                    string batteryInfo = "";
+                    int batteryCount = 0;
+                    
+                    foreach (ManagementObject battery in searcherBattery.Get())
+                    {
+                        batteryCount++;
+                        string batteryName = battery["Name"]?.ToString() ?? "Unknown";
+                        string batteryStatus = battery["Status"]?.ToString() ?? "Unknown";
+                        string chargeRemaining = battery["EstimatedChargeRemaining"]?.ToString() ?? "Unknown";
+                        
+                        if (batteryCount == 1)
+                        {
+                            batteryInfo = $"🔋 Battery: {batteryName} | 📊 Status: {batteryStatus} | 🔋 Charge: {chargeRemaining}%";
+                        }
+                        else
+                        {
+                            batteryInfo += $"\n🔋 Battery {batteryCount}: {batteryName} | 📊 Status: {batteryStatus} | 🔋 Charge: {chargeRemaining}%";
+                        }
+                    }
+                    
+                    if (batteryCount > 0)
+                    {
+                        powerInfo = batteryInfo;
+                    }
+                    else if (string.IsNullOrEmpty(powerInfo))
+                    {
+                        powerInfo = "❌ Power supply information not available";
+                    }
+                }
+                
+                return powerInfo;
+            }
+            catch (Exception ex)
+            {
+                return $"❌ Error detecting power supply: {ex.Message}";
+            }
+        }
+
+        // Método auxiliar para identificar o tipo de fonte de energia
+        private string GetPowerSupplyType(string powerSupplyType)
+        {
+            switch (powerSupplyType)
+            {
+                case "1": return "Other";
+                case "2": return "Unknown";
+                case "3": return "Linear";
+                case "4": return "Switching";
+                case "5": return "Battery";
+                case "6": return "UPS";
+                case "7": return "Converter";
+                case "8": return "Regulator";
+                default: return "Unknown";
+            }
         }
 
         //Get Type HD NVME or HDD or SSD not implemented
@@ -397,10 +866,10 @@ namespace tianaliser
 
             lblMotherBoardProcessor.Text = "";
             foreach (ManagementObject mo in s1.Get())
-                lblMotherBoardProcessor.Text  += " PLACA MÃE : " +  mo["Model"];
+                lblMotherBoardProcessor.Text  += "🔧 Motherboard: " +  mo["Model"];
 
             foreach (ManagementObject mo in s2.Get())
-                lblMotherBoardProcessor.Text  +=  " PROCESSADOR : " +  mo["Name"];        
+                lblMotherBoardProcessor.Text  +=  " | 🖥️ Processor: " +  mo["Name"];        
         }
 
         private void FormTiAnalyzer_Load(object sender, EventArgs e)
