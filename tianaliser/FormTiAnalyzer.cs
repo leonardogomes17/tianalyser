@@ -1,5 +1,4 @@
-﻿using System;
-using System.Data;
+﻿using System.Data;
 using System.Linq;
 using System.Windows.Forms;
 using  System.Net.NetworkInformation;
@@ -9,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Management;
 using System.Collections.Generic;
+using System;
 
 namespace tianaliser
 {
@@ -23,7 +23,6 @@ namespace tianaliser
         //TODO: Se possui wifi / bluetooth / cabo 
         //TODO: Alertas 90 PORCENTO USO MEMORIA, HD, CPU 
         //TODO: Alertas Temperatura GPU/CPU/FONTE
-        //TODO: Correção da Versão do Windows
         //TODO: MODELO MAQUINA
 
         //PRO
@@ -61,79 +60,98 @@ namespace tianaliser
         //Get Version Windows Simplify
         private string getOSInfo()
         {
-            //Get Operating system information.
-            OperatingSystem os = Environment.OSVersion;
-            //Get version information about the os.
-            Version vs = os.Version;
+            try
+            {
+                using (var searcher = new ManagementObjectSearcher("SELECT Caption, Version, OSArchitecture FROM Win32_OperatingSystem"))
+                {
+                    foreach (ManagementObject obj in searcher.Get())
+                    {
+                        string caption = obj["Caption"]?.ToString() ?? "Windows";
+                        string version = obj["Version"]?.ToString() ?? "";
+                        string architecture = obj["OSArchitecture"]?.ToString() ?? "";
+                        string servicePack = Environment.OSVersion.ServicePack;
 
-            //Variable to hold our return value
-            string operatingSystem = "";
+                        string result = $"{caption} {version}";
+                        if (!string.IsNullOrEmpty(servicePack))
+                            result += $" {servicePack}";
+                        if (!string.IsNullOrEmpty(architecture))
+                            result += $" {architecture}";
+                        return result;
+                    }
+                }
+            }
+            catch
+            {
+                // fallback para o método antigo se WMI falhar
+                OperatingSystem os = Environment.OSVersion;
+                Version vs = os.Version;
+                string operatingSystem = "";
 
-            if (os.Platform == PlatformID.Win32Windows)
-            {
-                //This is a pre-NT version of Windows
-                switch (vs.Minor)
+                if (os.Platform == PlatformID.Win32Windows)
                 {
-                    case 0:
-                        operatingSystem = "95";
-                        break;
-                    case 10:
-                        if (vs.Revision.ToString() == "2222A")
-                            operatingSystem = "98SE";
-                        else
-                            operatingSystem = "98";
-                        break;
-                    case 90:
-                        operatingSystem = "Me";
-                        break;
-                    default:
-                        break;
+                    switch (vs.Minor)
+                    {
+                        case 0:
+                            operatingSystem = "95";
+                            break;
+                        case 10:
+                            if (vs.Revision.ToString() == "2222A")
+                                operatingSystem = "98SE";
+                            else
+                                operatingSystem = "98";
+                            break;
+                        case 90:
+                            operatingSystem = "Me";
+                            break;
+                        default:
+                            break;
+                    }
                 }
-            }
-            else if (os.Platform == PlatformID.Win32NT)
-            {
-                switch (vs.Major)
+                else if (os.Platform == PlatformID.Win32NT)
                 {
-                    case 3:
-                        operatingSystem = "NT 3.51";
-                        break;
-                    case 4:
-                        operatingSystem = "NT 4.0";
-                        break;
-                    case 5:
-                        if (vs.Minor == 0)
-                            operatingSystem = "2000";
-                        else
-                            operatingSystem = "XP";
-                        break;
-                    case 6:
-                        if (vs.Minor == 0)
-                            operatingSystem = "Vista";
-                        else
-                            operatingSystem = "7";
-                        break;
-                    default:
-                        break;
+                    switch (vs.Major)
+                    {
+                        case 3:
+                            operatingSystem = "NT 3.51";
+                            break;
+                        case 4:
+                            operatingSystem = "NT 4.0";
+                            break;
+                        case 5:
+                            if (vs.Minor == 0)
+                                operatingSystem = "2000";
+                            else
+                                operatingSystem = "XP";
+                            break;
+                        case 6:
+                            if (vs.Minor == 0)
+                                operatingSystem = "Vista";
+                            else if (vs.Minor == 1)
+                                operatingSystem = "7";
+                            else if (vs.Minor == 2)
+                                operatingSystem = "8";
+                            else if (vs.Minor == 3)
+                                operatingSystem = "8.1";
+                            else
+                                operatingSystem = "Unknown";
+                            break;
+                        case 10:
+                            operatingSystem = "10/11";
+                            break;
+                        default:
+                            operatingSystem = "Unknown";
+                            break;
+                    }
                 }
-            }
-            //Make sure we actually got something in our OS check
-            //We don't want to just return " Service Pack 2" or " 32-bit"
-            //That information is useless without the OS version.
-            if (operatingSystem != "")
-            {
-                //Got something.  Let's prepend "Windows" and get more info.
-                operatingSystem = "Windows " + operatingSystem;
-                //See if there's a service pack installed.
-                if (os.ServicePack != "")
+                if (operatingSystem != "")
                 {
-                    //Append it to the OS name.  i.e. "Windows XP Service Pack 3"
-                    operatingSystem += " " + os.ServicePack;
+                    operatingSystem = "Windows " + operatingSystem;
+                    if (os.ServicePack != "")
+                        operatingSystem += " " + os.ServicePack;
                 }
-                //Append the OS architecture.  i.e. "Windows XP Service Pack 3 32-bit"
-                //operatingSystem += " " + getOSArchitecture().ToString() + "-bit";
+                return operatingSystem;
             }
-            //Return the information we've gathered.
-            return operatingSystem;
+            return "Windows (Unknown Version)";
         }
 
         //Get MAC ADRESS
