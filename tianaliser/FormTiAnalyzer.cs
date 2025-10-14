@@ -19,7 +19,6 @@ namespace tianaliser
             InitializeComponent();
         }
 
-        //TODO: Add Office Serial Key Detection
         //TODO: Se possui wifi / bluetooth / cabo 
         //TODO: Alertas 90 PORCENTO USO MEMORIA, HD, CPU 
         //TODO: Alertas Temperatura GPU/CPU/FONTE
@@ -55,6 +54,8 @@ namespace tianaliser
             lblBIOS.Text += GetBIOSInfo();
             lblPowerSupply.Text += GetPowerSupplyInfo();
             lblRamSlots.Text += GetSlotsRam();
+            lblOfficeVersion.Text += GetOfficeVersion();
+            lblOfficeSerial.Text += GetOfficeProductKey();
         }
 
         //Get Version Windows Simplify
@@ -394,6 +395,222 @@ namespace tianaliser
             catch (Exception ex)
             {
                 return $"Erro ao obter informações dos slots de RAM: {ex.Message}";
+            }
+        }
+        
+        // Função para obter a versão do Office instalado
+        private string GetOfficeVersion()
+        {
+            try
+            {
+                string result = "";
+                string[] officeVersions = { "16.0", "15.0", "14.0", "12.0", "11.0" };
+                string[] officeNames = { "Office 2016/2019/2021/365", "Office 2013", "Office 2010", "Office 2007", "Office 2003" };
+                
+                for (int i = 0; i < officeVersions.Length; i++)
+                {
+                    string version = officeVersions[i];
+                    string name = officeNames[i];
+                    
+                    // Verificar se a versão do Office está instalada
+                    RegistryKey baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, 
+                        InternalCheckIsWow64() ? RegistryView.Registry64 : RegistryView.Registry32);
+                    
+                    RegistryKey officeKey = baseKey.OpenSubKey($@"SOFTWARE\Microsoft\Office\{version}\Common\InstallRoot");
+                    
+                    if (officeKey != null)
+                    {
+                        object pathValue = officeKey.GetValue("Path");
+                        if (pathValue != null)
+                        {
+                            // Verificar a versão exata para Office 2016 ou superior
+                            if (version == "16.0")
+                            {
+                                try
+                                {
+                                    // Verificação específica para Office 2016
+                                    RegistryKey office2016Key = baseKey.OpenSubKey(@"SOFTWARE\Microsoft\Office\16.0\Common");
+                                    if (office2016Key != null)
+                                    {
+                                        name = "Office 2016";
+                                    }
+                                    
+                                    RegistryKey clickToRunKey = baseKey.OpenSubKey(@"SOFTWARE\Microsoft\Office\ClickToRun\Configuration");
+                                    if (clickToRunKey != null)
+                                    {
+                                        object versionValue = clickToRunKey.GetValue("VersionToReport");
+                                        if (versionValue != null)
+                                        {
+                                            string exactVersion = versionValue.ToString();
+                                            
+                                            // Determinar a versão exata com base no número da build
+                                            if (exactVersion.StartsWith("16.0."))
+                                            {
+                                                int buildNumber;
+                                                if (int.TryParse(exactVersion.Split('.')[2], out buildNumber))
+                                                {
+                                                    if (buildNumber >= 13801 && buildNumber <= 13928)
+                                                        name = "Office 2019";
+                                                    else if (buildNumber >= 4229 && buildNumber < 13801)
+                                                        name = "Office 2016";
+                                                    else if (buildNumber > 13928)
+                                                        name = "Office 2021/365";
+                                                }
+                                            }
+                                            
+                                            result = $"{name} (Versão {exactVersion})";
+                                            return result;
+                                        }
+                                    }
+                                }
+                                catch
+                                {
+                                    // Fallback para o nome genérico se não conseguir determinar a versão exata
+                                    result = name;
+                                    return result;
+                                }
+                            }
+                            
+                            result = name;
+                            return result;
+                        }
+                    }
+                }
+                
+                return result.Length > 0 ? result : "Microsoft Office não encontrado";
+            }
+            catch (Exception ex)
+            {
+                return $"Erro ao obter versão do Office: {ex.Message}";
+            }
+        }
+        
+        // Função para obter o número de série do Office
+        private string GetOfficeProductKey()
+        {
+            try
+            {
+                string result = "";
+                string[] officeVersions = { "16.0", "15.0", "14.0", "12.0", "11.0" };
+                
+                for (int i = 0; i < officeVersions.Length; i++)
+                {
+                    string version = officeVersions[i];
+                    
+                    // Verificar se a versão do Office está instalada
+                    RegistryKey baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, 
+                        InternalCheckIsWow64() ? RegistryView.Registry64 : RegistryView.Registry32);
+                    
+                    // Tentar obter a chave do produto do registro
+                    RegistryKey officeKey = baseKey.OpenSubKey($@"SOFTWARE\Microsoft\Office\{version}\Registration");
+                    
+                    if (officeKey != null)
+                    {
+                        // Procurar nas subchaves de registro
+                        foreach (string subKeyName in officeKey.GetSubKeyNames())
+                        {
+                            RegistryKey subKey = officeKey.OpenSubKey(subKeyName);
+                            if (subKey != null)
+                            {
+                                object productKey = subKey.GetValue("DigitalProductId");
+                                if (productKey != null)
+                                {
+                                    // Decodificar a chave do produto
+                                    byte[] digitalProductId = (byte[])productKey;
+                                    string decodedKey = DecodeProductKeyOffice(digitalProductId);
+                                    
+                                    if (!string.IsNullOrEmpty(decodedKey))
+                                    {
+                                        result = decodedKey;
+                                        return result;
+                                    }
+                                }
+                                
+                                // Verificar também o valor ProductID
+                                object productID = subKey.GetValue("ProductID");
+                                if (productID != null && string.IsNullOrEmpty(result))
+                                {
+                                    result = productID.ToString();
+                                }
+                            }
+                        }
+                        
+                        // Se encontrou algum ID, retornar
+                        if (!string.IsNullOrEmpty(result))
+                        {
+                            return result;
+                        }
+                    }
+                    
+                    // Verificar também a chave de licença do Office 365/2016+
+                    if (version == "16.0")
+                    {
+                        try
+                        {
+                            RegistryKey licenseKey = baseKey.OpenSubKey(@"SOFTWARE\Microsoft\Office\16.0\Common\Licensing");
+                            if (licenseKey != null)
+                            {
+                                foreach (string valueName in licenseKey.GetValueNames())
+                                {
+                                    if (valueName.Contains("License"))
+                                    {
+                                        return "Office 365/2021 Subscription (Licença Digital)";
+                                    }
+                                }
+                            }
+                        }
+                        catch { }
+                    }
+                }
+                
+                return result.Length > 0 ? result : "Chave do Office não encontrada";
+            }
+            catch (Exception ex)
+            {
+                return $"Erro ao obter chave do Office: {ex.Message}";
+            }
+        }
+        
+        // Função para decodificar a chave do produto do Office
+        private string DecodeProductKeyOffice(byte[] digitalProductId)
+        {
+            if (digitalProductId == null || digitalProductId.Length < 67)
+                return null;
+                
+            const string digits = "BCDFGHJKMPQRTVWXY2346789";
+            char[] decodedChars = new char[25];
+            
+            try
+            {
+                // Offset para a chave do Office
+                int keyStartIndex = 52;
+                byte[] keyBytes = new byte[15];
+                Array.Copy(digitalProductId, keyStartIndex, keyBytes, 0, 15);
+                
+                for (int i = 24; i >= 0; i--)
+                {
+                    if ((i + 1) % 6 == 0)
+                    {
+                        decodedChars[i] = '-';
+                    }
+                    else
+                    {
+                        int digitMapIndex = 0;
+                        for (int j = 14; j >= 0; j--)
+                        {
+                            int byteValue = (digitMapIndex << 8) | keyBytes[j];
+                            keyBytes[j] = (byte)(byteValue / 24);
+                            digitMapIndex = byteValue % 24;
+                            decodedChars[i] = digits[digitMapIndex];
+                        }
+                    }
+                }
+                
+                return new string(decodedChars);
+            }
+            catch
+            {
+                return null;
             }
         }
 
